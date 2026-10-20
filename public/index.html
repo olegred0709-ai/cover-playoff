@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Обложка альбома · 11Е</title>
+  <meta name="description" content="Плей-офф обложек выпускного альбома: выбери одну из пары, пока не останется победитель.">
+  <meta name="theme-color" content="#121212">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main id="app">
+    <!-- Стартовый экран -->
+    <section id="screen-intro" class="screen">
+      <div class="intro">
+        <p class="eyebrow">Выпускной альбом · 11Е</p>
+        <h1>Выбираем<br>обложку</h1>
+        <p class="lead">Перед тобой будут появляться пары обложек — нажимай на ту, что нравится больше. Она проходит дальше, пока не останется одна.</p>
+        <ul class="facts">
+          <li><b id="fact-count">35</b> обложек</li>
+          <li><b id="fact-matches">34</b> пары</li>
+          <li><b>~3</b> минуты</li>
+        </ul>
+        <label class="field">
+          <span>Как тебя зовут? <i>(необязательно)</i></span>
+          <input id="name" type="text" maxlength="60" autocomplete="name" placeholder="Имя и фамилия">
+        </label>
+        <button id="start" class="btn btn-primary">Начать</button>
+        <p class="note">Пройти можно только один раз — выбирай честно 🙂</p>
+      </div>
+    </section>
+
+    <!-- Плей-офф -->
+    <section id="screen-duel" class="screen" hidden>
+      <header class="duel-head">
+        <div>
+          <p class="round" id="round-name">1/16 финала</p>
+          <p class="counter" id="counter">Пара 1 из 34</p>
+        </div>
+        <button id="undo" class="btn btn-ghost" disabled aria-label="Отменить последний выбор">↶ Назад</button>
+      </header>
+      <div class="progress"><div id="progress-bar"></div></div>
+      <div class="duel" id="duel">
+        <article class="card" data-side="0">
+          <button class="pick" aria-label="Выбрать левую обложку"><img alt=""></button>
+          <div class="card-foot">
+            <span class="title"></span>
+            <button class="zoom" aria-label="Открыть крупно">⤢</button>
+          </div>
+        </article>
+        <div class="vs">VS</div>
+        <article class="card" data-side="1">
+          <button class="pick" aria-label="Выбрать правую обложку"><img alt=""></button>
+          <div class="card-foot">
+            <span class="title"></span>
+            <button class="zoom" aria-label="Открыть крупно">⤢</button>
+          </div>
+        </article>
+      </div>
+      <p class="hint">Нажми на обложку, чтобы выбрать · ⤢ — посмотреть крупно</p>
+    </section>
+
+    <!-- Итог -->
+    <section id="screen-result" class="screen" hidden>
+      <div class="result">
+        <p class="eyebrow" id="result-eyebrow">Твой выбор</p>
+        <h2 id="result-title"></h2>
+        <img id="result-img" alt="">
+        <p class="runnerup" id="result-runnerup"></p>
+        <div id="send-status" class="send-status"></div>
+        <button id="retry" class="btn btn-primary" hidden>Отправить ещё раз</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="lightbox">
+    <img alt="">
+    <p class="lb-title"></p>
+    <form method="dialog"><button class="btn btn-ghost">Закрыть</button></form>
+  </dialog>
+
+  <script src="covers.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
