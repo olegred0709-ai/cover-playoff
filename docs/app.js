@@ -1,8 +1,9 @@
 // Плей-офф обложек: пары → победители проходят дальше → одна обложка.
-// Результат уходит POST-запросом в Google Apps Script, который пишет строки в таблицу.
+// Результат уходит сообщением в Telegram-бот организатора.
 
-// URL веб-приложения Apps Script (Развертывание → Веб-приложение → URL, заканчивается на /exec)
-const SCRIPT_URL = '';
+// Отдельный бот только для голосования: токен виден в коде страницы
+const TG_TOKEN = '8780478907:AAHujU37dSezEnR8x9Vis-x1PG_eacmH5XM';
+const TG_CHAT_ID = '1976699849';
 
 const STORE_KEY = 'cover-playoff-v1';
 const COOKIE_KEY = 'cp_done';
@@ -165,20 +166,23 @@ function renderResult() {
   show('screen-result');
 }
 
-function payload() {
-  const title = id => byId[id].title;
-  return {
-    voteId: state.deviceId,
-    name: state.name || '',
-    champion: title(state.champion),
-    finalist: lossesIn('Финал')[0] || '',
-    semifinalists: lossesIn('Полуфинал').join(', '),
-    matches: state.matches.map(m => ({ round: m.round, winner: title(m.winner), loser: title(m.loser) })),
-    startedAt: state.startedAt,
-    finishedAt: state.finishedAt,
-    durationSec: Math.round((Date.parse(state.finishedAt) - Date.parse(state.startedAt)) / 1000),
-    userAgent: navigator.userAgent,
-  };
+function escapeHtml(s) {
+  return s.replace(/[&<>]/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' })[ch]);
+}
+
+// Текст сообщения; последняя строка (#data) — все пары «победитель>проигравший» по id, для подсчёта рейтинга
+function message() {
+  const sec = Math.round((Date.parse(state.finishedAt) - Date.parse(state.startedAt)) / 1000);
+  const semis = lossesIn('Полуфинал');
+  const lines = [
+    `🗳 Новый голос — <b>${escapeHtml(state.name || 'без имени')}</b>`,
+    `🏆 <b>${escapeHtml(byId[state.champion].title)}</b>`,
+    `🥈 ${escapeHtml(lossesIn('Финал')[0] || '—')}`,
+    `🥉 ${escapeHtml(semis.join(' · ') || '—')}`,
+    `⏱ ${Math.floor(sec / 60)} мин ${sec % 60} с · 📱 ${state.deviceId.slice(0, 8)}`,
+    `<blockquote expandable>#data ${state.deviceId} ${state.matches.map(m => `${m.winner}&gt;${m.loser}`).join(' ')}</blockquote>`,
+  ];
+  return lines.join('\n');
 }
 
 function setStatus(text, kind) {
@@ -189,24 +193,24 @@ function setStatus(text, kind) {
 
 async function send() {
   $('#retry').hidden = true;
-  if (!SCRIPT_URL) {
-    setStatus('Отправка ещё не настроена (нет адреса таблицы)', 'err');
+  if (!TG_TOKEN || !TG_CHAT_ID) {
+    setStatus('Отправка ещё не настроена', 'err');
     return;
   }
   setStatus('Отправляем голос…');
   try {
-    // text/plain + no-cors: Apps Script не отвечает на preflight, поэтому «простой» запрос
-    await fetch(SCRIPT_URL, {
+    // form-urlencoded — «простой» запрос без preflight
+    const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
       method: 'POST',
-      mode: 'no-cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(payload()),
+      body: new URLSearchParams({ chat_id: TG_CHAT_ID, text: message(), parse_mode: 'HTML' }),
     });
+    const data = await res.json();
+    if (!data.ok) throw new Error(data.description);
     state.sent = true;
     save();
     setStatus('Голос учтён ✓ Спасибо!', 'ok');
   } catch {
-    setStatus('Не получилось отправить — проверь интернет', 'err');
+    setStatus('Не получилось отправить голос. Попробуй ещё раз — если не выходит, включи VPN', 'err');
     $('#retry').hidden = false;
   }
 }

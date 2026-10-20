@@ -1,6 +1,7 @@
 # Плей-офф обложек выпускного альбома (11Е)
 
 Статический сайт (`docs/`, GitHub Pages): обложки выпадают парами, победитель проходит дальше, в конце остаётся одна.
-Результат отправляется в Google Таблицу через Apps Script (`apps-script/Code.gs`). Пройти можно один раз с устройства (localStorage + cookie, плюс сервер отбрасывает повторный ID устройства).
+Результат отправляется сообщением в отдельный Telegram-бот (`TG_TOKEN` / `TG_CHAT_ID` в `docs/app.js`).
+Пройти можно один раз с устройства (localStorage + cookie).
 
-Адрес Apps Script задаётся в `docs/app.js` → `SCRIPT_URL`.
+Итоговый рейтинг: экспортировать чат с ботом из Telegram Desktop и запустить `python tools/tally.py result.json`.
